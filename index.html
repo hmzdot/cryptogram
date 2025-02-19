@@ -91,6 +91,7 @@
     <div class="controls">
       <button onclick="newGame()">Yeni Oyun</button>
       <button onclick="checkSolution()">Cevabı Kontrol Et</button>
+      <button onclick="giveHint()">İpucu</button>
       <button onclick="revealSolution()">Çözümü Göster</button>
     </div>
     <div id="cryptogram" class="cryptogram"></div>
@@ -225,6 +226,37 @@
         inputs.forEach((input) => {
           const encrypted = input.dataset.encrypted;
           input.value = solution[encrypted];
+          input.style.color = "blue";
+        });
+      }
+
+      function giveHint() {
+        const inputs = Array.from(document.querySelectorAll("input"));
+        // Filter for empty or incorrect inputs
+        const unsolvedInputs = inputs.filter((input) => {
+          const encrypted = input.dataset.encrypted;
+          const userGuess = input.value.toUpperCase();
+          const correctLetter = solution[encrypted];
+          return !userGuess || userGuess !== correctLetter;
+        });
+
+        if (unsolvedInputs.length === 0) {
+          alert("Tüm harfler zaten çözülmüş!");
+          return;
+        }
+
+        // Pick a random unsolved input
+        const randomInput =
+          unsolvedInputs[Math.floor(Math.random() * unsolvedInputs.length)];
+        const encrypted = randomInput.dataset.encrypted;
+        const correctLetter = solution[encrypted];
+
+        // Fill in all instances of this letter
+        const sameLetterInputs = document.querySelectorAll(
+          `input[data-encrypted="${encrypted}"]`
+        );
+        sameLetterInputs.forEach((input) => {
+          input.value = correctLetter;
           input.style.color = "blue";
         });
       }

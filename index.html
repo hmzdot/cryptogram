@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -159,7 +159,7 @@
       }
 
       function encrypt(text, cypher) {
-        text = text.toUpperCase();
+        text = text.toLocaleUpperCase();
 
         return text
           .split("")
@@ -183,10 +183,7 @@
         input.maxLength = 1;
         input.dataset.encrypted = letter;
         input.addEventListener("input", (e) => {
-          let value = e.target.value.toUpperCase();
-          // Convert similar looking letters to Turkish characters
-          value = value.replace(/I/g, "İ");
-          value = value.replace(/i/g, "ı");
+          let value = e.target.value.toLocaleUpperCase();
           e.target.value = value;
 
           // Fill in all inputs with the same encrypted number
@@ -245,7 +242,7 @@
 
         inputs.forEach((input) => {
           const encrypted = input.dataset.encrypted;
-          const userGuess = input.value.toUpperCase();
+          const userGuess = input.value.toLocaleUpperCase();
           const correctLetter = solution[encrypted];
 
           if (userGuess !== correctLetter) {
@@ -275,7 +272,7 @@
         // Filter for empty or incorrect inputs
         const unsolvedInputs = inputs.filter((input) => {
           const encrypted = input.dataset.encrypted;
-          const userGuess = input.value.toUpperCase();
+          const userGuess = input.value.toLocaleUpperCase();
           const correctLetter = solution[encrypted];
           return !userGuess || userGuess !== correctLetter;
         });

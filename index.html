@@ -30,6 +30,14 @@
         padding: 30px;
         border-radius: 10px;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .word {
+        display: flex;
+        align-items: center;
+        gap: 2px;
       }
       .letter {
         display: inline-block;
@@ -97,18 +105,40 @@
     <div id="cryptogram" class="cryptogram"></div>
 
     <script>
-      const quotes = [
-        "Bir ulus sanatsız kalırsa hayat damarlarından biri kopmuş demektir.",
-        "Hayatta en hakiki mürşit ilimdir, fendir.",
-        "Eğitimdir ki bir milleti ya özgür, bağımsız, şanlı, yüksek bir topluluk halinde yaşatır; ya da esaret ve sefalete terk eder.",
-        "Benim naçiz vücudum elbet bir gün toprak olacaktır, ancak Türkiye Cumhuriyeti ilelebet payidar kalacaktır.",
-      ];
+      async function getQuote() {
+        const apiUrl =
+          "https://mcanvar.github.io/gibi-sayings/v1.0.0/sayings.json";
+
+        /**
+         * @typedef {{
+         *  saying: string;
+         *  season: number;
+         *  episode: number;
+         *  episodeName: string;
+         *  saidAt: string;
+         *  saidBy: string;
+         * }} Saying
+         *
+         * @typedef {Saying[]} ApiResponse
+         */
+
+        const response = await fetch(apiUrl);
+
+        /** @type {ApiResponse} */
+        const data = await response.json();
+
+        // Select a random saying
+        const randomIndex = Math.floor(Math.random() * data.length);
+        const randomSaying = data[randomIndex];
+
+        return randomSaying.saying;
+      }
 
       let currentQuote = "";
       let encryptedQuote = "";
       let solution = {};
 
-      function shuffleAlphabet() {
+      function initSolution() {
         const alphabet = "ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ".split("");
         const numbers = Array.from(
           { length: alphabet.length },
@@ -118,28 +148,26 @@
           const j = Math.floor(Math.random() * (i + 1));
           [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
         }
-        return numbers;
-      }
 
-      function encrypt(text) {
-        const alphabet = "ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ".split("");
-        const numbers = shuffleAlphabet();
+        const cypher = {};
         solution = {};
-        text = text.toUpperCase();
-
         alphabet.forEach((letter, index) => {
+          cypher[letter] = numbers[index];
           solution[numbers[index]] = letter;
         });
+        return [cypher, solution];
+      }
+
+      function encrypt(text, cypher) {
+        text = text.toUpperCase();
 
         return text
           .split("")
           .map((char) => {
-            // Keep any non-letter character unchanged (spaces, punctuation, etc.)
-            if (!alphabet.includes(char)) return char;
-            const index = alphabet.indexOf(char);
-            return numbers[index];
+            const encrypted = cypher[char];
+            return encrypted ?? char;
           })
-          .join(" "); // Add space between numbers for readability
+          .join(" ");
       }
 
       function createInput(letter) {
@@ -176,25 +204,37 @@
         return span;
       }
 
-      function newGame() {
-        currentQuote = quotes[Math.floor(Math.random() * quotes.length)];
-        encryptedQuote = encrypt(currentQuote);
+      async function newGame() {
+        currentQuote = await getQuote();
+        const [cypher, solution] = initSolution();
         const container = document.getElementById("cryptogram");
         container.innerHTML = "";
 
-        // Split by spaces to preserve multi-digit numbers
-        encryptedQuote.split(" ").forEach((token) => {
-          if (token === "") {
-            container.appendChild(createInput(" "));
+        const words = currentQuote.split(" ");
+        const encryptedWords = words.map((word) => encrypt(word, cypher));
+
+        words.forEach((_, index) => {
+          const wordDiv = document.createElement("div");
+          wordDiv.className = "word";
+
+          const encryptedWord = encryptedWords[index];
+          if (!encryptedWord) {
+            wordDiv.appendChild(createInput(" "));
           } else {
-            // For each token (number or punctuation), create appropriate input
-            if (token.match(/^[0-9]+$/)) {
-              container.appendChild(createInput(token));
-            } else {
-              token.split("").forEach((char) => {
-                container.appendChild(createInput(char));
-              });
-            }
+            // Process each character in the encrypted word
+            encryptedWord.split(" ").forEach((char) => {
+              wordDiv.appendChild(createInput(char));
+            });
+          }
+
+          // Add space after each word except the last one
+          if (index < words.length - 1) {
+            const spaceSpan = document.createElement("span");
+            spaceSpan.innerHTML = "&nbsp;&nbsp;";
+            container.appendChild(wordDiv);
+            container.appendChild(spaceSpan);
+          } else {
+            container.appendChild(wordDiv);
           }
         });
       }

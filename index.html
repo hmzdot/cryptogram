@@ -52,6 +52,7 @@
         height: 30px;
         line-height: 100%;
         margin-bottom: 5px;
+        transform: translateY(-0.5em);
       }
       input {
         width: 28px;
@@ -156,32 +157,38 @@
 
     <script>
       async function getQuote() {
-        const apiUrl =
-          "https://mcanvar.github.io/gibi-sayings/v1.0.0/sayings.json";
+        try {
+          // Get random English quote
+          const quoteResponse = await fetch("http://api.quotable.io/random");
+          const quoteData = await quoteResponse.json();
+          const englishQuote = quoteData.content;
 
-        /**
-         * @typedef {{
-         *  saying: string;
-         *  season: number;
-         *  episode: number;
-         *  episodeName: string;
-         *  saidAt: string;
-         *  saidBy: string;
-         * }} Saying
-         *
-         * @typedef {Saying[]} ApiResponse
-         */
+          // Translate to Turkish using Google Translate API
+          const translateResponse = await fetch(
+            "https://translate.googleapis.com/translate_a/single",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+              body: new URLSearchParams({
+                client: "gtx",
+                sl: "en",
+                tl: "tr",
+                dt: "t",
+                q: englishQuote,
+              }),
+            }
+          );
 
-        const response = await fetch(apiUrl);
+          const translationData = await translateResponse.json();
+          const turkishQuote = translationData[0][0][0];
 
-        /** @type {ApiResponse} */
-        const data = await response.json();
-
-        // Select a random saying
-        const randomIndex = Math.floor(Math.random() * data.length);
-        const randomSaying = data[randomIndex];
-
-        return randomSaying.saying;
+          return turkishQuote;
+        } catch (error) {
+          console.error("Error fetching or translating quote:", error);
+          return "Merhaba Dünya"; // Fallback quote if there's an error
+        }
       }
 
       let currentQuote = "";

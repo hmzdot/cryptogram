@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cryptogram Game</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .cryptogram {
+        margin: 20px 0;
+        font-size: 24px;
+        letter-spacing: 2px;
+      }
+      .letter {
+        display: inline-block;
+        text-align: center;
+        margin: 0 2px;
+      }
+      input {
+        width: 20px;
+        text-align: center;
+        font-size: 18px;
+        margin-bottom: 5px;
+        display: block;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        margin: 10px 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Cryptogram Puzzle</h1>
+    <div class="controls">
+      <button onclick="newGame()">New Game</button>
+      <button onclick="checkSolution()">Check Solution</button>
+      <button onclick="revealSolution()">Reveal Solution</button>
+    </div>
+    <div id="cryptogram" class="cryptogram"></div>
+
+    <script>
+      const quotes = [
+        "Bir ulus sanatsız kalırsa hayat damarlarından biri kopmuş demektir.",
+        "Hayatta en hakiki mürşit ilimdir, fendir.",
+        "Eğitimdir ki bir milleti ya özgür, bağımsız, şanlı, yüksek bir topluluk halinde yaşatır; ya da esaret ve sefalete terk eder.",
+        "Benim naçiz vücudum elbet bir gün toprak olacaktır, ancak Türkiye Cumhuriyeti ilelebet payidar kalacaktır.",
+      ];
+
+      let currentQuote = "";
+      let encryptedQuote = "";
+      let solution = {};
+
+      function shuffleAlphabet() {
+        const alphabet = "ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ".split("");
+        for (let i = alphabet.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [alphabet[i], alphabet[j]] = [alphabet[j], alphabet[i]];
+        }
+        return alphabet;
+      }
+
+      function encrypt(text) {
+        const alphabet = "ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ".split("");
+        const shuffled = shuffleAlphabet();
+        solution = {};
+        text = text.toUpperCase();
+
+        alphabet.forEach((letter, index) => {
+          solution[shuffled[index]] = letter;
+        });
+
+        return text
+          .split("")
+          .map((char) => {
+            // Keep any non-letter character unchanged (spaces, punctuation, etc.)
+            if (!alphabet.includes(char)) return char;
+            const index = alphabet.indexOf(char);
+            return shuffled[index];
+          })
+          .join("");
+      }
+
+      function createInput(letter) {
+        // Handle spaces and punctuation
+        if (!letter.match(/[ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ]/i)) {
+          const span = document.createElement("span");
+          span.innerHTML = letter === " " ? "&nbsp;&nbsp;" : letter;
+          return span;
+        }
+        const span = document.createElement("span");
+        span.className = "letter";
+        const input = document.createElement("input");
+        input.maxLength = 1;
+        input.dataset.encrypted = letter;
+        input.addEventListener("input", (e) => {
+          let value = e.target.value.toUpperCase();
+          // Convert similar looking letters to Turkish characters
+          value = value.replace(/I/g, "İ");
+          value = value.replace(/i/g, "ı");
+          e.target.value = value;
+        });
+        span.appendChild(input);
+        const encrypted = document.createElement("span");
+        encrypted.textContent = letter;
+        span.appendChild(encrypted);
+        return span;
+      }
+
+      function newGame() {
+        currentQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        encryptedQuote = encrypt(currentQuote);
+        const container = document.getElementById("cryptogram");
+        container.innerHTML = "";
+
+        encryptedQuote.split("").forEach((letter) => {
+          container.appendChild(createInput(letter));
+        });
+      }
+
+      function checkSolution() {
+        const inputs = document.querySelectorAll("input");
+        let correct = true;
+
+        inputs.forEach((input) => {
+          const encrypted = input.dataset.encrypted;
+          const userGuess = input.value.toUpperCase();
+          const correctLetter = solution[encrypted];
+
+          if (userGuess !== correctLetter) {
+            correct = false;
+            input.style.color = "red";
+          } else {
+            input.style.color = "green";
+          }
+        });
+
+        if (correct) {
+          alert("Congratulations! You solved the cryptogram!");
+        }
+      }
+
+      function revealSolution() {
+        const inputs = document.querySelectorAll("input");
+        inputs.forEach((input) => {
+          const encrypted = input.dataset.encrypted;
+          input.value = solution[encrypted];
+          input.style.color = "blue";
+        });
+      }
+
+      // Start a new game when the page loads
+      window.onload = newGame;
+    </script>
+  </body>
+</html>

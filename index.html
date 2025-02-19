@@ -104,6 +104,14 @@
           value = value.replace(/I/g, "İ");
           value = value.replace(/i/g, "ı");
           e.target.value = value;
+
+          // Fill in all inputs with the same encrypted letter
+          const sameLetterInputs = document.querySelectorAll(
+            `input[data-encrypted="${letter}"]`
+          );
+          sameLetterInputs.forEach((input) => {
+            input.value = value;
+          });
         });
         span.appendChild(input);
         const encrypted = document.createElement("span");

@@ -186,8 +186,16 @@
 
           return turkishQuote;
         } catch (error) {
+          const quotes = [
+            "İnsan ne olduğunu bilmek istiyorsa, önce ne olmadığını görmek zorunda.",
+            "Hayat nedir ki,uzun bir ayrılık ezgisinden başka?",
+            "Heyhat! Kim açıklayabilir bize insan kalbi neden sevginin yanında nefreti de barındırır?",
+            "Büyümek acı çekmek demekmiş, bunu içimi en sızlatan yanımdan öğrenmiştim",
+            "Zaman, bize kim olduğumuzu gösterir.",
+            "Mücahede kişinin kendisiyle savaşıdır, mücadele başkasıyla. Kendisiyle savaşmayan başkasıyla savaşamaz",
+          ];
           console.error("Error fetching or translating quote:", error);
-          return "Merhaba Dünya"; // Fallback quote if there's an error
+          return quotes[Math.floor(Math.random() * quotes.length)]; // Fallback quote if there's an error
         }
       }
 

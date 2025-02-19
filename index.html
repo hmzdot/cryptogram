@@ -43,6 +43,14 @@
         display: inline-block;
         text-align: center;
         margin: 0 2px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .punctuation {
+        height: 30px;
+        line-height: 100%;
+        margin-bottom: 5px;
       }
       input {
         width: 30px;
@@ -174,6 +182,7 @@
         // Handle spaces and punctuation
         if (!letter.match(/[0-9]/)) {
           const span = document.createElement("span");
+          span.className = "punctuation";
           span.innerHTML = letter === " " ? "&nbsp;&nbsp;&nbsp;&nbsp;" : letter;
           return span;
         }

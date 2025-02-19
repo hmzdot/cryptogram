@@ -179,7 +179,7 @@
       async function getQuote() {
         try {
           // Get random English quote
-          const quoteResponse = await fetch("http://api.quotable.io/random");
+          const quoteResponse = await fetch("https://api.quotable.io/random");
           const quoteData = await quoteResponse.json();
           const englishQuote = quoteData.content;
 

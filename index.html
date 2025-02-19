@@ -27,12 +27,13 @@
         font-size: 24px;
         letter-spacing: 2px;
         background-color: #ffffff;
-        padding: 30px;
+        padding: 20px;
         border-radius: 10px;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         display: flex;
         flex-wrap: wrap;
-        gap: 10px;
+        gap: 8px;
+        justify-content: center;
       }
       .word {
         display: flex;
@@ -53,10 +54,10 @@
         margin-bottom: 5px;
       }
       input {
-        width: 30px;
-        height: 30px;
+        width: 28px;
+        height: 28px;
         text-align: center;
-        font-size: 18px;
+        font-size: 16px;
         margin-bottom: 5px;
         display: block;
         border: 2px solid #bdc3c7;
@@ -72,9 +73,9 @@
       button {
         padding: 12px 24px;
         font-size: 16px;
-        margin: 10px 5px;
+        /* margin: 10px 5px; */
         border: none;
-        border-radius: 25px;
+        border-radius: 10px;
         cursor: pointer;
         transition: all 0.3s ease;
         background-color: #a8d8ea;
@@ -99,6 +100,46 @@
       input[style*="color: blue"] {
         background-color: #bbdefb;
         border-color: #90caf9;
+      }
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      /* Mobile-specific styles */
+      @media (max-width: 600px) {
+        body {
+          padding: 10px;
+        }
+        h1 {
+          font-size: 24px;
+          margin-bottom: 20px;
+        }
+        .cryptogram {
+          font-size: 20px;
+          padding: 15px;
+          gap: 6px;
+        }
+        input {
+          width: 24px;
+          height: 24px;
+          font-size: 14px;
+        }
+        button {
+          padding: 10px 20px;
+          font-size: 14px;
+          flex: 1 1 calc(50% - 10px);
+          min-width: 120px;
+          max-width: 200px;
+        }
+        .word {
+          gap: 1px;
+        }
+        .letter {
+          margin: 0 1px;
+        }
       }
     </style>
   </head>

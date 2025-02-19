@@ -150,6 +150,7 @@
       <button onclick="checkSolution()">Cevabı Kontrol Et</button>
       <button onclick="giveHint()">İpucu</button>
       <button onclick="revealSolution()">Çözümü Göster</button>
+      <button onclick="cleanInputs()">Temizle</button>
     </div>
     <div id="cryptogram" class="cryptogram"></div>
 
@@ -345,6 +346,17 @@
         sameLetterInputs.forEach((input) => {
           input.value = correctLetter;
           input.style.color = "blue";
+        });
+      }
+
+      function cleanInputs() {
+        const inputs = document.querySelectorAll("input");
+        inputs.forEach((input) => {
+          // Only clear inputs that aren't hints (not colored blue)
+          if (input.style.color !== "blue") {
+            input.value = "";
+            input.style.color = ""; // Reset the color
+          }
         });
       }
 

@@ -303,7 +303,7 @@
         Tamam
       </button>
     </div>
-    <pre id="debug"></pre>
+    <pre id="debug" style="display: none"></pre>
     <h1><span id="title">Kriptogram Bulmacası</span></h1>
     <div class="controls">
       <button onclick="newGame()">Yeni Oyun</button>
@@ -693,6 +693,9 @@
             // Auto scroll to bottom
             debugPre.scrollTop = debugPre.scrollHeight;
           }
+
+          const debug = document.getElementById("debug");
+          debug.style.display = "block";
         };
       }
 

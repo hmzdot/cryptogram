@@ -6,7 +6,7 @@
     <title>Cryptogram Game</title>
     <link rel="manifest" href="/cryptogram/manifest.json" />
     <meta name="theme-color" content="#34495e" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="apple-mobile-web-app-title" content="Cryptogram" />
     <link rel="apple-touch-icon" href="/cryptogram/icons/icon-192x192.png" />
@@ -197,15 +197,70 @@
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         z-index: 1000;
       }
+      #debug {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        width: 300px;
+        max-height: 200px;
+        overflow-y: auto;
+        background: rgba(0, 0, 0, 0.8);
+        color: #00ff00;
+        padding: 10px;
+        border-radius: 5px;
+        font-family: monospace;
+        font-size: 12px;
+        line-height: 1.4;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        z-index: 1000;
+      }
+      @media (max-width: 600px) {
+        #debug {
+          width: calc(100% - 40px);
+          max-height: 150px;
+        }
+      }
     </style>
     <script src="quotes.js"></script>
     <script>
+      // Enhanced logging system
+      const logger = {
+        info: function (...args) {
+          console.log("ℹ️", ...args);
+        },
+        error: function (...args) {
+          console.log("❌", ...args);
+        },
+        success: function (...args) {
+          console.log("✅", ...args);
+        },
+        warn: function (...args) {
+          console.log("⚠️", ...args);
+        },
+      };
+
+      // Global error handler
+      window.onerror = function (msg, url, lineNo, columnNo, error) {
+        logger.error("Uncaught Error:", msg);
+        if (error && error.stack) {
+          logger.error("Stack:", error.stack);
+        }
+        return false;
+      };
+
+      // Unhandled promise rejection handler
+      window.addEventListener("unhandledrejection", function (event) {
+        logger.error("Unhandled Promise Rejection:", event.reason);
+      });
+
       // Show installation prompt for iOS users
       if (
         navigator.userAgent.match(/iPhone|iPad|iPod/) &&
         !navigator.standalone
       ) {
         setTimeout(() => {
+          logger.info("Showing iOS installation prompt");
           document.getElementById("installPrompt").style.display = "block";
         }, 2000);
       }
@@ -213,15 +268,20 @@
       // Register Service Worker
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
+          logger.info("Attempting to register service worker...");
           navigator.serviceWorker
             .register("/cryptogram/sw.js", { scope: "/cryptogram/" })
             .then((registration) => {
-              console.log("ServiceWorker registration successful");
+              logger.success("ServiceWorker registration successful:", {
+                scope: registration.scope,
+              });
             })
             .catch((err) => {
-              console.log("ServiceWorker registration failed: ", err);
+              logger.error("ServiceWorker registration failed:", err);
             });
         });
+      } else {
+        logger.warn("Service workers are not supported");
       }
     </script>
   </head>
@@ -243,6 +303,7 @@
         Tamam
       </button>
     </div>
+    <pre id="debug"></pre>
     <h1><span id="title">Kriptogram Bulmacası</span></h1>
     <div class="controls">
       <button onclick="newGame()">Yeni Oyun</button>
@@ -309,6 +370,7 @@
       let solution = {};
 
       function initSolution() {
+        logger.info("Initializing new solution...");
         const alphabet = "ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ".split("");
         const numbers = Array.from(
           { length: alphabet.length },
@@ -325,19 +387,23 @@
           cypher[letter] = numbers[index];
           solution[numbers[index]] = letter;
         });
+        logger.success("Solution initialized");
         return [cypher, solution];
       }
 
       function encrypt(text, cypher) {
+        logger.info("Encrypting text:", text);
         text = text.toLocaleUpperCase();
 
-        return text
+        const result = text
           .split("")
           .map((char) => {
             const encrypted = cypher[char];
             return encrypted ?? char;
           })
           .join(" ");
+        logger.success("Text encrypted");
+        return result;
       }
 
       function createInput(letter) {
@@ -356,6 +422,7 @@
         input.addEventListener("input", (e) => {
           let value = e.target.value.toLocaleUpperCase();
           e.target.value = value;
+          logger.info("Letter input:", { encrypted: letter, guess: value });
 
           // Fill in all inputs with the same encrypted number
           const sameLetterInputs = document.querySelectorAll(
@@ -459,58 +526,81 @@
       }
 
       async function newGame() {
-        currentQuote = await getQuote();
-        const [cypher, solution] = initSolution();
-        const container = document.getElementById("cryptogram");
-        container.innerHTML = "";
+        logger.info("Starting new game...");
+        try {
+          currentQuote = await getQuote();
+          const [cypher, newSolution] = initSolution();
+          solution = newSolution;
+          const container = document.getElementById("cryptogram");
+          container.innerHTML = "";
 
-        const words = currentQuote.split(" ");
+          const words = currentQuote.split(" ");
+          logger.info("Creating puzzle with words:", words);
 
-        words.forEach((word, index) => {
-          const wordDiv = createWordDiv(word, cypher);
-          container.appendChild(wordDiv);
+          words.forEach((word, index) => {
+            const wordDiv = createWordDiv(word, cypher);
+            container.appendChild(wordDiv);
 
-          // Add space between words
-          if (index < words.length - 1) {
-            const spaceSpan = document.createElement("span");
-            spaceSpan.innerHTML = "&nbsp;&nbsp;";
-            container.appendChild(spaceSpan);
-          }
-        });
+            // Add space between words
+            if (index < words.length - 1) {
+              const spaceSpan = document.createElement("span");
+              spaceSpan.innerHTML = "&nbsp;&nbsp;";
+              container.appendChild(spaceSpan);
+            }
+          });
+          logger.success("New game started successfully");
+        } catch (error) {
+          logger.error("Error starting new game:", error);
+        }
       }
 
       function checkSolution() {
+        logger.info("Checking solution...");
         const inputs = document.querySelectorAll("input");
         let correct = true;
+        let totalChecked = 0;
+        let correctCount = 0;
 
         inputs.forEach((input) => {
           const encrypted = input.dataset.encrypted;
           const userGuess = input.value.toLocaleUpperCase();
           const correctLetter = solution[encrypted];
 
+          totalChecked++;
           if (userGuess !== correctLetter) {
             correct = false;
             input.style.color = "red";
           } else {
+            correctCount++;
             input.style.color = "green";
           }
         });
 
+        logger.info("Solution check results:", {
+          totalLetters: totalChecked,
+          correctLetters: correctCount,
+          isComplete: correct,
+        });
+
         if (correct) {
+          logger.success("Puzzle solved correctly!");
           alert("Tebrikler! Kriptogramı çözdünüz!");
         }
       }
 
       function revealSolution() {
+        logger.info("Revealing solution...");
         const inputs = document.querySelectorAll("input");
         inputs.forEach((input) => {
           const encrypted = input.dataset.encrypted;
           input.value = solution[encrypted];
           input.style.color = "blue";
         });
+        logger.success("Solution revealed");
       }
 
       function giveHint() {
+        logger.info("Giving hint...");
         const inputs = Array.from(document.querySelectorAll("input"));
         // Filter for empty or incorrect inputs
         const unsolvedInputs = inputs.filter((input) => {
@@ -521,6 +611,7 @@
         });
 
         if (unsolvedInputs.length === 0) {
+          logger.warn("No unsolved letters to hint");
           alert("Tüm harfler zaten çözülmüş!");
           return;
         }
@@ -531,6 +622,8 @@
         const encrypted = randomInput.dataset.encrypted;
         const correctLetter = solution[encrypted];
 
+        logger.info("Revealing hint for encrypted letter:", encrypted);
+
         // Fill in all instances of this letter
         const sameLetterInputs = document.querySelectorAll(
           `input[data-encrypted="${encrypted}"]`
@@ -539,18 +632,46 @@
           input.value = correctLetter;
           input.style.color = "blue";
         });
+        logger.success("Hint provided for letter:", correctLetter);
       }
 
       function cleanInputs() {
+        logger.info("Cleaning inputs...");
         const inputs = document.querySelectorAll("input");
+        let cleanedCount = 0;
         inputs.forEach((input) => {
           // Only clear inputs that aren't hints (not colored blue)
           if (input.style.color !== "blue") {
             input.value = "";
             input.style.color = ""; // Reset the color
+            cleanedCount++;
           }
         });
+        logger.success("Inputs cleaned:", { cleanedCount });
       }
+
+      // Patch console.log to also write to debug pre
+      const originalLog = console.log;
+      console.log = function (...args) {
+        // Call original console.log
+        originalLog.apply(console, args);
+
+        // Write to debug pre
+        const debugPre = document.getElementById("debug");
+        if (debugPre) {
+          const timestamp = new Date().toLocaleTimeString();
+          const message = args
+            .map((arg) =>
+              typeof arg === "object"
+                ? JSON.stringify(arg, null, 2)
+                : String(arg)
+            )
+            .join(" ");
+          debugPre.innerHTML += `[${timestamp}] ${message}\n`;
+          // Auto scroll to bottom
+          debugPre.scrollTop = debugPre.scrollHeight;
+        }
+      };
 
       // Start a new game when the page loads
       window.onload = newGame;

@@ -470,12 +470,33 @@
       }
 
       function calculateMaxWordLength() {
-        // Calculate the width of a character from header
-        // It has "Kriptogram Bulmacası" text so we can calculate the width of
-        // a character
-        const maxWidth = document.body.clientWidth;
-        const charLength = document.querySelector("#title").offsetWidth;
-        const maxLength = Math.floor((maxWidth * 10) / charLength);
+        const maxWidth = document.querySelector("#cryptogram").offsetWidth;
+
+        // Create a complete temporary letter element that matches the structure
+        const letterSpan = document.createElement("span");
+        letterSpan.className = "letter";
+
+        // Add input element
+        const input = document.createElement("input");
+        input.maxLength = 1;
+        letterSpan.appendChild(input);
+
+        // Add number span below
+        const numberSpan = document.createElement("span");
+        numberSpan.textContent = "1";
+        letterSpan.appendChild(numberSpan);
+
+        // Make it invisible and add to document temporarily
+        letterSpan.style.visibility = "hidden";
+        letterSpan.style.position = "absolute";
+        document.body.appendChild(letterSpan);
+
+        // Get the width including margins and padding
+        const charLength = letterSpan.offsetWidth;
+        document.body.removeChild(letterSpan);
+
+        // Calculate max length, accounting for word spacing
+        const maxLength = Math.floor((maxWidth - 40) / charLength);
         return maxLength;
       }
 
@@ -499,10 +520,10 @@
             wordDiv.appendChild(createInput(char));
           });
 
-          // Add hyphen
+          // Add long dash
           const hyphen = document.createElement("span");
-          hyphen.textContent = "-";
-          hyphen.className = "hyphen";
+          hyphen.textContent = "   —";
+          hyphen.className = "punctuation";
           wordDiv.appendChild(hyphen);
 
           // Force line break

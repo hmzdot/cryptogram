@@ -4,6 +4,33 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cryptogram Game</title>
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#34495e" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-title" content="Cryptogram" />
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png" />
+    <!-- iOS splash screen images -->
+    <link
+      rel="apple-touch-startup-image"
+      href="icons/icon-512x512.png"
+      media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="icons/icon-512x512.png"
+      media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="icons/icon-512x512.png"
+      media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="icons/icon-512x512.png"
+      media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)"
+    />
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -155,10 +182,67 @@
           margin: 0 1px;
         }
       }
+      .install-prompt {
+        display: none;
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(52, 73, 94, 0.95);
+        color: white;
+        padding: 15px 20px;
+        border-radius: 10px;
+        font-size: 14px;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+      }
     </style>
     <script src="quotes.js"></script>
+    <script>
+      // Show installation prompt for iOS users
+      if (
+        navigator.userAgent.match(/iPhone|iPad|iPod/) &&
+        !navigator.standalone
+      ) {
+        setTimeout(() => {
+          document.getElementById("installPrompt").style.display = "block";
+        }, 2000);
+      }
+
+      // Register Service Worker
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/sw.js")
+            .then((registration) => {
+              console.log("ServiceWorker registration successful");
+            })
+            .catch((err) => {
+              console.log("ServiceWorker registration failed: ", err);
+            });
+        });
+      }
+    </script>
   </head>
   <body>
+    <div id="installPrompt" class="install-prompt">
+      iOS kullanıcıları: Ana ekrana eklemek için Safari'de paylaş butonuna 📱
+      tıklayın ve "Ana Ekrana Ekle"yi seçin
+      <button
+        onclick="this.parentElement.style.display='none'"
+        style="
+          background: white;
+          color: #34495e;
+          border: none;
+          padding: 5px 10px;
+          margin-left: 10px;
+          border-radius: 5px;
+        "
+      >
+        Tamam
+      </button>
+    </div>
     <h1><span id="title">Kriptogram Bulmacası</span></h1>
     <div class="controls">
       <button onclick="newGame()">Yeni Oyun</button>

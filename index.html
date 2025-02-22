@@ -179,9 +179,9 @@
       async function getQuote() {
         try {
           // Get random English quote
-          const quoteResponse = await fetch("https://api.quotable.io/random");
+          const quoteResponse = await fetch("https://zenquotes.io/api/random");
           const quoteData = await quoteResponse.json();
-          const englishQuote = quoteData.content;
+          const englishQuote = quoteData[0].q;
 
           // Translate to Turkish using Google Translate API
           const translateResponse = await fetch(

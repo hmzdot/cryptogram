@@ -4,31 +4,31 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cryptogram Game</title>
-    <link rel="manifest" href="manifest.json" />
+    <link rel="manifest" href="/cryptogram/manifest.json" />
     <meta name="theme-color" content="#34495e" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="apple-mobile-web-app-title" content="Cryptogram" />
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png" />
+    <link rel="apple-touch-icon" href="/cryptogram/icons/icon-192x192.png" />
     <!-- iOS splash screen images -->
     <link
       rel="apple-touch-startup-image"
-      href="icons/icon-512x512.png"
+      href="/cryptogram/icons/icon-512x512.png"
       media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)"
     />
     <link
       rel="apple-touch-startup-image"
-      href="icons/icon-512x512.png"
+      href="/cryptogram/icons/icon-512x512.png"
       media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)"
     />
     <link
       rel="apple-touch-startup-image"
-      href="icons/icon-512x512.png"
+      href="/cryptogram/icons/icon-512x512.png"
       media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)"
     />
     <link
       rel="apple-touch-startup-image"
-      href="icons/icon-512x512.png"
+      href="/cryptogram/icons/icon-512x512.png"
       media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)"
     />
     <style>
@@ -214,7 +214,7 @@
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
           navigator.serviceWorker
-            .register("/sw.js")
+            .register("/cryptogram/sw.js", { scope: "/cryptogram/" })
             .then((registration) => {
               console.log("ServiceWorker registration successful");
             })

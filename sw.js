@@ -1,11 +1,11 @@
 const CACHE_NAME = "cryptogram-cache-v1";
 const urlsToCache = [
-  "/",
-  "/index.html",
-  "/quotes.js",
-  "/manifest.json",
-  "/icons/icon-192x192.png",
-  "/icons/icon-512x512.png",
+  "/cryptogram/",
+  "/cryptogram/index.html",
+  "/cryptogram/quotes.js",
+  "/cryptogram/manifest.json",
+  "/cryptogram/icons/icon-192x192.png",
+  "/cryptogram/icons/icon-512x512.png",
 ];
 
 // Installation

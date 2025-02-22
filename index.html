@@ -474,8 +474,8 @@
         // It has "Kriptogram Bulmacası" text so we can calculate the width of
         // a character
         const maxWidth = document.body.clientWidth;
-        const charLength = document.querySelector("#title").offsetWidth / 15;
-        const maxLength = Math.floor(maxWidth / charLength);
+        const charLength = document.querySelector("#title").offsetWidth;
+        const maxLength = Math.floor((maxWidth * 10) / charLength);
         return maxLength;
       }
 

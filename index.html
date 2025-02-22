@@ -143,6 +143,7 @@
         }
       }
     </style>
+    <script src="quotes.js"></script>
   </head>
   <body>
     <h1>Kriptogram Bulmacası</h1>
@@ -176,47 +177,54 @@
         };
       }
 
-      async function getQuote() {
-        try {
-          // Get random English quote
-          const quoteResponse = await fetch("https://zenquotes.io/api/random");
-          const quoteData = await quoteResponse.json();
-          const englishQuote = quoteData[0].q;
-
-          // Translate to Turkish using Google Translate API
-          const translateResponse = await fetch(
-            "https://translate.googleapis.com/translate_a/single",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-              },
-              body: new URLSearchParams({
-                client: "gtx",
-                sl: "en",
-                tl: "tr",
-                dt: "t",
-                q: englishQuote,
-              }),
+      function getQuote() {
+        return new Promise(async (resolve) => {
+          try {
+            // Verify that quotesData exists and contains at least one quote.
+            if (!window.quotesData || quotesData.length === 0) {
+              throw new Error("No quotes data found.");
             }
-          );
+            // Optionally, select a random quote rather than always the first one.
+            const randomIndex = Math.floor(Math.random() * quotesData.length);
+            const englishQuote = quotesData[randomIndex].q;
 
-          const translationData = await translateResponse.json();
-          const turkishQuote = translationData[0][0][0];
+            // Translate to Turkish using Google Translate API
+            const translateResponse = await fetch(
+              "https://translate.googleapis.com/translate_a/single",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: new URLSearchParams({
+                  client: "gtx",
+                  sl: "en",
+                  tl: "tr",
+                  dt: "t",
+                  q: englishQuote,
+                }),
+              }
+            );
 
-          return turkishQuote;
-        } catch (error) {
-          const quotes = [
-            "İnsan ne olduğunu bilmek istiyorsa, önce ne olmadığını görmek zorunda.",
-            "Hayat nedir ki,uzun bir ayrılık ezgisinden başka?",
-            "Heyhat! Kim açıklayabilir bize insan kalbi neden sevginin yanında nefreti de barındırır?",
-            "Büyümek acı çekmek demekmiş, bunu içimi en sızlatan yanımdan öğrenmiştim",
-            "Zaman, bize kim olduğumuzu gösterir.",
-            "Mücahede kişinin kendisiyle savaşıdır, mücadele başkasıyla. Kendisiyle savaşmayan başkasıyla savaşamaz",
-          ];
-          console.error("Error fetching or translating quote:", error);
-          return quotes[Math.floor(Math.random() * quotes.length)]; // Fallback quote if there's an error
-        }
+            const translationData = await translateResponse.json();
+            const turkishQuote = translationData[0][0][0];
+            resolve(turkishQuote);
+          } catch (error) {
+            const fallbackQuotes = [
+              "İnsan ne olduğunu bilmek istiyorsa, önce ne olmadığını görmek zorunda.",
+              "Hayat nedir ki,uzun bir ayrılık ezgisinden başka?",
+              "Heyhat! Kim açıklayabilir bize insan kalbi neden sevginin yanında nefreti de barındırır?",
+              "Büyümek acı çekmek demekmiş, bunu içimi en sızlatan yanımdan öğrenmiştim",
+              "Zaman, bize kim olduğumuzu gösterir.",
+              "Mücahede kişinin kendisiyle savaşıdır, mücadele başkasıyla. Kendisiyle savaşmayan başkasıyla savaşamaz",
+            ];
+            console.error("Error fetching or translating quote:", error);
+            // Return a random fallback quote.
+            resolve(
+              fallbackQuotes[Math.floor(Math.random() * fallbackQuotes.length)]
+            );
+          }
+        });
       }
 
       let currentQuote = "";
@@ -396,6 +404,7 @@
       }
 
       // Start a new game when the page loads
+      circumventCors();
       window.onload = newGame;
     </script>
   </body>

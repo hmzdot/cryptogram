@@ -34,11 +34,20 @@
         flex-wrap: wrap;
         gap: 8px;
         justify-content: center;
+        align-items: center;
+        text-align: center;
       }
       .word {
         display: flex;
         align-items: center;
         gap: 2px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .word-container {
+        display: flex;
+        justify-content: center;
+        margin: 4px 0;
       }
       .letter {
         display: inline-block;
@@ -53,6 +62,10 @@
         line-height: 100%;
         margin-bottom: 5px;
         transform: translateY(-0.5em);
+      }
+      .hyphen {
+        margin-right: 2px;
+        color: #666;
       }
       input {
         width: 28px;
@@ -146,7 +159,7 @@
     <script src="quotes.js"></script>
   </head>
   <body>
-    <h1>Kriptogram Bulmacası</h1>
+    <h1><span id="title">Kriptogram Bulmacası</span></h1>
     <div class="controls">
       <button onclick="newGame()">Yeni Oyun</button>
       <button onclick="checkSolution()">Cevabı Kontrol Et</button>
@@ -157,26 +170,6 @@
     <div id="cryptogram" class="cryptogram"></div>
 
     <script>
-      function circumventCors() {
-        const cors_api_host = "cors-anywhere.herokuapp.com";
-        const cors_api_url = "https://" + cors_api_host + "/";
-        const slice = [].slice;
-        const origin = window.location.protocol + "//" + window.location.host;
-        const open = XMLHttpRequest.prototype.open;
-        XMLHttpRequest.prototype.open = function () {
-          const args = slice.call(arguments);
-          const targetOrigin = /^https?:\/\/([^\/]+)/i.exec(args[1]);
-          if (
-            targetOrigin &&
-            targetOrigin[0].toLowerCase() !== origin &&
-            targetOrigin[1] !== cors_api_host
-          ) {
-            args[1] = cors_api_url + args[1];
-          }
-          return open.apply(this, args);
-        };
-      }
-
       function getQuote() {
         return new Promise(async (resolve) => {
           try {
@@ -295,6 +288,92 @@
         return span;
       }
 
+      function splitWord(word, maxWidth) {
+        // Create a temporary span to measure text width
+        const measure = document.createElement("span");
+        measure.style.visibility = "hidden";
+        measure.style.position = "absolute";
+        measure.style.fontSize = "20px"; // Match the mobile font size
+        document.body.appendChild(measure);
+
+        // Find the best splitting point (prefer splitting at vowels or consonants)
+        const vowels = ["A", "E", "I", "İ", "O", "Ö", "U", "Ü"];
+        let bestSplit = Math.floor(word.length / 2);
+
+        // Try to find a vowel near the middle to split at
+        for (
+          let i = Math.floor(word.length / 2) - 2;
+          i < Math.floor(word.length / 2) + 2;
+          i++
+        ) {
+          if (vowels.includes(word[i])) {
+            bestSplit = i;
+            break;
+          }
+        }
+
+        const parts = [word.substring(0, bestSplit), word.substring(bestSplit)];
+
+        document.body.removeChild(measure);
+        return parts;
+      }
+
+      function calculateMaxWordLength() {
+        // Calculate the width of a character from header
+        // It has "Kriptogram Bulmacası" text so we can calculate the width of
+        // a character
+        const maxWidth = document.body.clientWidth;
+        const charLength = document.querySelector("#title").offsetWidth / 15;
+        const maxLength = Math.floor(maxWidth / charLength);
+        return maxLength;
+      }
+
+      function createWordDiv(word, cypher) {
+        const wordDiv = document.createElement("div");
+        wordDiv.className = "word";
+
+        const encryptedWord = encrypt(word, cypher);
+        const chars = encryptedWord.split(" ");
+
+        // Calculate if we need to split the word
+        const maxLength = calculateMaxWordLength();
+        if (word.length > maxLength) {
+          // Threshold for splitting
+          const parts = splitWord(word);
+          const firstPart = encrypt(parts[0], cypher).split(" ");
+          const secondPart = encrypt(parts[1], cypher).split(" ");
+
+          // Create first part
+          firstPart.forEach((char) => {
+            wordDiv.appendChild(createInput(char));
+          });
+
+          // Add hyphen
+          const hyphen = document.createElement("span");
+          hyphen.textContent = "-";
+          hyphen.className = "hyphen";
+          wordDiv.appendChild(hyphen);
+
+          // Force line break
+          const lineBreak = document.createElement("div");
+          lineBreak.style.flexBasis = "100%";
+          lineBreak.style.height = "0";
+          wordDiv.appendChild(lineBreak);
+
+          // Create second part
+          secondPart.forEach((char) => {
+            wordDiv.appendChild(createInput(char));
+          });
+        } else {
+          // Regular word processing
+          chars.forEach((char) => {
+            wordDiv.appendChild(createInput(char));
+          });
+        }
+
+        return wordDiv;
+      }
+
       async function newGame() {
         currentQuote = await getQuote();
         const [cypher, solution] = initSolution();
@@ -302,30 +381,16 @@
         container.innerHTML = "";
 
         const words = currentQuote.split(" ");
-        const encryptedWords = words.map((word) => encrypt(word, cypher));
 
-        words.forEach((_, index) => {
-          const wordDiv = document.createElement("div");
-          wordDiv.className = "word";
+        words.forEach((word, index) => {
+          const wordDiv = createWordDiv(word, cypher);
+          container.appendChild(wordDiv);
 
-          const encryptedWord = encryptedWords[index];
-          if (!encryptedWord) {
-            wordDiv.appendChild(createInput(" "));
-          } else {
-            // Process each character in the encrypted word
-            encryptedWord.split(" ").forEach((char) => {
-              wordDiv.appendChild(createInput(char));
-            });
-          }
-
-          // Add space after each word except the last one
+          // Add space between words
           if (index < words.length - 1) {
             const spaceSpan = document.createElement("span");
             spaceSpan.innerHTML = "&nbsp;&nbsp;";
-            container.appendChild(wordDiv);
             container.appendChild(spaceSpan);
-          } else {
-            container.appendChild(wordDiv);
           }
         });
       }
@@ -404,7 +469,6 @@
       }
 
       // Start a new game when the page loads
-      circumventCors();
       window.onload = newGame;
     </script>
   </body>
